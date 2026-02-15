@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ImageStatus {
+  todo
+  in_progress
+  review
+  rejected
+  completed
+
+  @@map("image_status")
+}
+
+enum UserRole {
+  admin
+  annotator
+  reviewer
+  uploader
+  guest
+
+  @@map("user_roles")
+}
+
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  username     String   @unique 
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  roles         UserRole[] @default([guest])
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  uploadedImages  ImageMetadata[] @relation("Uploader")
+  annotatedImages ImageMetadata[] @relation("Annotator")
+  reviewedImages  ImageMetadata[] @relation("Reviewer")
+
+  @@map("user")
+}
+
+model ImageMetadata {
+  id       String      @id @default(uuid()) @db.Uuid
+  filename String
+  s3Path   String      @unique @map("s3_path")
+  status   ImageStatus @default(todo)
+
+  width  Int @default(0)
+  height Int @default(0)
+
+  thumbnailPath String? @map("thumbnail_path")
+  blurHash      String? @map("blur_hash")
+  fileSizeBytes Int?    @map("file_size_bytes")
+
+  uploadedByUserId String? @map("uploaded_by_user_id") @db.Uuid
+  uploadedBy       User?   @relation("Uploader", fields: [uploadedByUserId], references: [id])
+
+  annotatedByUserId String? @map("annotated_by_user_id") @db.Uuid
+  annotatedBy       User?   @relation("Annotator", fields: [annotatedByUserId], references: [id])
+
+  reviewedByUserId String? @map("reviewed_by_user_id") @db.Uuid
+  reviewedBy       User?   @relation("Reviewer", fields: [reviewedByUserId], references: [id])
+
+  rejectionReason String? @map("rejection_reason")
+
+  annotations Annotation[]
+
+  cvatTaskId Int? @map("cvat_task_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([uploadedByUserId])
+  @@index([annotatedByUserId])
+  @@map("image_metadata")
+}
+
+model Annotation {
+  id String @id @default(uuid()) @db.Uuid
+
+  imageId String        @map("image_id") @db.Uuid
+  image   ImageMetadata @relation(fields: [imageId], references: [id], onDelete: Cascade)
+
+  classId Int @map("class_id")
+
+  segmentation Json
+
+  bbox Json?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([imageId]) // Fetching all annotations for one image
+  @@index([classId]) // "Find all images containing a Car"
+  @@map("annotation")
+}
