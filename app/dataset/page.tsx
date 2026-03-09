@@ -13,7 +13,7 @@ export default async function GalleryPage() {
     <main className="h-screen flex flex-col">
       {/* Optional Header */}
       <header className="h-16 bg-white border-b border-gray-200 flex items-center px-6 shrink-0">
-        <h1 className="text-xl font-bold text-gray-800">Dataset Gallery</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Dataset Gallery</h1>
       </header>
 
       {/* The Gallery Content */}

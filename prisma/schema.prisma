@@ -56,6 +56,10 @@ model ImageMetadata {
   blurHash      String? @map("blur_hash")
   fileSizeBytes Int?    @map("file_size_bytes")
 
+  tags          String[] @default([]) 
+  categories String[]  @map("categories") @default([])
+  cocoData      Json?    @map("coco_data")
+
   uploadedByUserId String? @map("uploaded_by_user_id") @db.Uuid
   uploadedBy       User?   @relation("Uploader", fields: [uploadedByUserId], references: [id])
 
@@ -66,10 +70,7 @@ model ImageMetadata {
   reviewedBy       User?   @relation("Reviewer", fields: [reviewedByUserId], references: [id])
 
   rejectionReason String? @map("rejection_reason")
-
-  annotations Annotation[]
-
-  cvatTaskId Int? @map("cvat_task_id")
+  cvatTaskId      Int?    @map("cvat_task_id")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -77,25 +78,6 @@ model ImageMetadata {
   @@index([status])
   @@index([uploadedByUserId])
   @@index([annotatedByUserId])
+  @@index([tags], type: Gin) 
   @@map("image_metadata")
-}
-
-model Annotation {
-  id String @id @default(uuid()) @db.Uuid
-
-  imageId String        @map("image_id") @db.Uuid
-  image   ImageMetadata @relation(fields: [imageId], references: [id], onDelete: Cascade)
-
-  classId Int @map("class_id")
-
-  segmentation Json
-
-  bbox Json?
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([imageId]) // Fetching all annotations for one image
-  @@index([classId]) // "Find all images containing a Car"
-  @@map("annotation")
 }

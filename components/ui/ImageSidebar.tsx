@@ -1,17 +1,17 @@
 "use client";
-import { GalleryImage, ImageStatus } from "@/app/types";
+import { ImageMetadata } from "@/app/generated/prisma/client";
+import { ImageStatus } from "@/app/types";
 
 interface SidebarProps {
-  images: GalleryImage[];
+  images: ImageMetadata[];
   selectedId: string | null;
   onSelect: (id: string) => void;
-  onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  isUploading: boolean;
+  onUploadClick: () => void;
 }
 
-export default function ImageSidebar({ images, selectedId, onSelect, onUpload, isUploading }: SidebarProps) {
+export default function ImageSidebar({ images, selectedId, onSelect, onUploadClick }: SidebarProps) {
 
-  // Helper to determine badge color based on your new Enum
+  // Helper to determine badge color based on your Enum
   const getStatusBadgeStyles = (status: ImageStatus) => {
     switch (status) {
       case "completed":
@@ -37,10 +37,12 @@ export default function ImageSidebar({ images, selectedId, onSelect, onUpload, i
     <div className="w-80 border-r border-gray-200 bg-white flex flex-col h-full flex-shrink-0">
       {/* Upload Header */}
       <div className="p-4 border-b border-gray-100 shrink-0">
-        <label className={`flex items-center justify-center w-full px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition shadow-sm font-medium ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-          {isUploading ? "Uploading..." : "+ Upload Image"}
-          <input type="file" className="hidden" accept="image/*" onChange={onUpload} disabled={isUploading} />
-        </label>
+        <button
+          onClick={onUploadClick}
+          className="button w-full px-4 py-2 rounded-lg cursor-pointer shadow-sm font-medium"
+        >
+          + Upload Images
+        </button>
       </div>
 
       {/* Scrollable List */}
@@ -53,21 +55,20 @@ export default function ImageSidebar({ images, selectedId, onSelect, onUpload, i
               <div
                 key={img.id}
                 onClick={() => onSelect(img.id)}
-                className={`p-3 cursor-pointer flex items-center gap-3 transition hover:bg-gray-50 group ${
-                  selectedId === img.id ? "bg-blue-50/60 border-l-4 border-l-blue-600" : "border-l-4 border-l-transparent"
-                }`}
+                className={`p-3 cursor-pointer flex items-center gap-3 transition hover:bg-gray-50 group ${selectedId === img.id ? "bg-blue-50/60 border-l-4 border-l-blue-600" : "border-l-4 border-l-transparent"
+                  }`}
               >
                 {/* Thumbnail */}
                 <div className="h-12 w-12 bg-gray-200 rounded-md object-cover flex-shrink-0 overflow-hidden border border-gray-100">
                   <img src={img.s3Path} alt={img.filename} className="w-full h-full object-cover" />
                 </div>
-                
+
                 {/* Metadata */}
                 <div className="min-w-0 flex-1">
                   <p className={`text-sm font-medium truncate mb-1 ${selectedId === img.id ? 'text-blue-900' : 'text-gray-700'}`}>
                     {img.filename}
                   </p>
-                  
+
                   {/* Status Badge */}
                   <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border font-semibold ${getStatusBadgeStyles(img.status)}`}>
                     {formatStatusLabel(img.status)}
