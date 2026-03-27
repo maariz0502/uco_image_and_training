@@ -1,5 +1,9 @@
-import Image from "next/image";
+// app/training/page.tsx
 
-export default function Home() {
-  return <div></div>;
+export const metadata = {
+  title: "Prepare Training Data | YOLOv8",
+};
+
+export default async function TrainingPage() {
+  return <></>;
 }

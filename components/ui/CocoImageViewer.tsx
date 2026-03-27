@@ -68,7 +68,7 @@ export default function CocoImageViewer({
 
         // Optional: Draw a background for the label text so it's readable
         const label = `${categories[ann.category_id - 1]}`;
-        console.log("Category ID:", ann.category_id, "Label:", label); // Debug log to verify category mapping
+        // console.log("Category ID:", ann.category_id, "Label:", label); // Debug log to verify category mapping
         ctx.font = `bold ${Math.max(14, img.naturalWidth * 0.015)}px Arial`;
         const textWidth = ctx.measureText(label).width;
 

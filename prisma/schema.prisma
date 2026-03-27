@@ -27,6 +27,15 @@ enum UserRole {
   @@map("user_roles")
 }
 
+enum JobStatus {
+  queued
+  training
+  completed
+  failed
+
+  @@map("job_status")
+}
+
 
 model User {
   id           String   @id @default(uuid()) @db.Uuid
@@ -39,9 +48,12 @@ model User {
   uploadedImages  ImageMetadata[] @relation("Uploader")
   annotatedImages ImageMetadata[] @relation("Annotator")
   reviewedImages  ImageMetadata[] @relation("Reviewer")
+  trainingJobs    TrainingJob[]
+  
 
   @@map("user")
 }
+
 
 model ImageMetadata {
   id       String      @id @default(uuid()) @db.Uuid
@@ -80,4 +92,22 @@ model ImageMetadata {
   @@index([annotatedByUserId])
   @@index([tags], type: Gin) 
   @@map("image_metadata")
+}
+
+
+model TrainingJob {
+  id              String    @id @default(uuid()) @db.Uuid
+  name            String?   // Optional: Let users name their runs (e.g., "Car Detection V1")
+  status          JobStatus @default(queued)
+  
+  s3DatasetPath   String    // Where the annotations.json lives
+  s3ModelPath     String?   // Where the final best.pt model will be saved by Python
+  
+  userId          String    @db.Uuid @map("user_id")
+  user            User      @relation(fields: [userId], references: [id])
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@map("training_job")
 }
